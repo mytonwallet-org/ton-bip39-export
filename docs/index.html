@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=0.5, user-scalable=no">
+  <title>Extract TON Private Keys from BIP39 24 Words</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+
+      height: 100vh;
+      margin: 0;
+      padding: 1rem;
+
+      font-family: 'Arial', sans-serif;
+      color: #222222;
+      text-align: center;
+
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .instruction {
+      display: inline-block;
+      margin: 1rem 1rem 0;
+      padding: 1rem;
+      background: #E7EDFF;
+      border-radius: 1rem;
+    }
+
+    .warning {
+      background: #fff6f6;
+    }
+
+    .copyable {
+      color: #2F7DD7;
+      border-bottom: 1px dotted #2F7DD7;
+      transition: opacity 150ms ease;
+      cursor: pointer;
+    }
+
+    .copyable:hover {
+      border-bottom: 0;
+    }
+
+    .copyable:active {
+      opacity: 0.5;
+    }
+  </style>
+<script defer src="index.js"></script></head>
+<body>
+<h2>Extract TON Private Keys from BIP39 24 Words</h2>
+
+<div>
+  <p>Your 24 words, separated by space:</p>
+  <input type="text" />
+  <button id="btn-extract">Extract Keys</button>
+</div>
+
+<p class="instruction warning">
+  <b>Never</b> send or show 24 words or private keys to other people.
+</p>
+
+<div id="results" class="hidden">
+  <p class="instruction">
+    Click to <b>copy</b> your private key and then <b>paste it</b>
+    <br />on <b>Import From Secret Words</b> screen in TON wallet app.
+  </p>
+
+  <h4>Your private key:</h4>
+  <div id="private-key"></div>
+
+  <h4>Your W5 address:</h4>
+  <div id="address"></div>
+</div>
+
+<script>
+  const $ = (selector) => document.querySelector(selector);
+  const $$ = (selector) => document.querySelectorAll(selector);
+
+  $('#btn-extract').addEventListener('click', async () => {
+    const mnemonic = $('input').value;
+
+    if (!mnemonic) return;
+
+    const { address, privateKeyHex } = await myLibrary.extractKeysFromBip39Mnemonic(mnemonic, 0);
+
+    $('#private-key').innerHTML = `<span class="copyable">${privateKeyHex}</span>`;
+    $('#address').innerHTML = `<span class="copyable">${address}</span>`;
+
+    $('#results').classList.remove('hidden');
+
+    Array.from($$('.copyable')).forEach((copyableEl) => {
+      copyableEl.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        navigator.clipboard?.writeText(copyableEl.textContent);
+      });
+    });
+  });
+</script>
+</body>
+</html>
