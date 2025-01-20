@@ -53,6 +53,10 @@
     .copyable:active {
       opacity: 0.5;
     }
+
+    .address {
+      padding: 5px;
+    }
   </style>
 <script defer src="index.js"></script></head>
 <body>
@@ -77,8 +81,7 @@
   <h4>Your private key:</h4>
   <div id="private-key"></div>
 
-  <h4>Your W5 address:</h4>
-  <div id="address"></div>
+  <h4>Your addresses:</h4>
 </div>
 
 <script>
@@ -86,16 +89,28 @@
   const $$ = (selector) => document.querySelectorAll(selector);
 
   $('#btn-extract').addEventListener('click', async () => {
-    const mnemonic = $('input').value;
+    const mnemonic = $('input').value?.replace(/\s+/g, ' ').trim();
 
     if (!mnemonic) return;
 
-    const { address, privateKeyHex } = await myLibrary.extractKeysFromBip39Mnemonic(mnemonic, 0);
+    const { wallets, privateKeyHex } = await myLibrary.extractKeysFromBip39Mnemonic(mnemonic, 0);
 
     $('#private-key').innerHTML = `<span class="copyable">${privateKeyHex}</span>`;
-    $('#address').innerHTML = `<span class="copyable">${address}</span>`;
 
-    $('#results').classList.remove('hidden');
+    const resultsContainer = $('#results');
+
+    resultsContainer.classList.remove('hidden');
+
+    for (const [version, address] of Object.entries(wallets)) {
+      const addressDiv = document.createElement('div');
+      addressDiv.id = `address-${version}`;
+      addressDiv.classList.add('address');
+      addressDiv.innerHTML = `${version}: <span class="copyable">${address}</span>`;
+
+      resultsContainer.appendChild(addressDiv);
+    }
+
+    resultsContainer.classList.remove('hidden');
 
     Array.from($$('.copyable')).forEach((copyableEl) => {
       copyableEl.addEventListener('click', (e) => {
